@@ -162,7 +162,7 @@ function generateNow() {
         const mlVoice = voices.find(v => v.lang === 'ml-IN' || v.lang.startsWith('ml'));
         if (mlVoice) { msg.voice = mlVoice; }
         msg.lang = 'ml-IN'; 
-        msg.rate = 0.95; // കുട്ടികൾക്ക് വ്യക്തമാകാൻ വേഗത കുറച്ചു
+        msg.rate = 0.85; // കുട്ടികൾക്ക് വ്യക്തമാകാൻ വേഗത കുറച്ചു
         msg.pitch = 1.0; 
         msg.onend = callback; 
         window.speechSynthesis.speak(msg); 
