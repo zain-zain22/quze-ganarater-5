@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Generator Ultra - Faris Zaini</title>
+    <style>
+        body { font-family: sans-serif; background: #eef2f3; padding: 15px; margin: 0; }
+        .gen-container { max-width: 900px; margin: 20px auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        h1 { text-align: center; color: #00796b; font-size: 24px; margin-bottom: 20px; border-bottom: 2px solid #009688; padding-bottom: 10px; }
+        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #333; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+        textarea { height: 120px; font-family: monospace; }
+        .btn-generate { background: #009688; color: white; border: none; padding: 18px; width: 100%; font-size: 18px; font-weight: bold; border-radius: 10px; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        #output-section { margin-top: 30px; display: none; }
+        #final-code-box { width: 100%; height: 400px; background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 10px; font-family: monospace; font-size: 13px; }
+        .btn-copy { background: #34495e; color: white; border: none; padding: 15px; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; font-weight: bold; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="gen-container">
+    <h1>ക്വിസ് കോഡ് ജനറേറ്റർ (Voice Speed & Quality Update)</h1>
+    
+    <div class="input-grid">
+        <div style="grid-column: span 2;"><label>മദ്രസയുടെ പേര്:</label><input type="text" id="madrassa" value="മദ്രസയുടെ പേര് ഇവിടെ നൽകുക"></div>
+        <div><label>ക്ലാസ്:</label><input type="text" id="cls" value="10"></div>
+        <div><label>വിഷയം:</label><input type="text" id="sub" value="തസ്കിയ"></div>
+        <div><label>പാർട്ട്:</label><input type="text" id="prt" value="1"></div>
+        <div><label>പാഠം നമ്പർ:</label><input type="text" id="lsn_no" value="2"></div>
+        <div style="grid-column: span 2;"><label>പാഠത്തിന്റെ പേര്:</label><input type="text" id="lsn_name" value="ഞാൻ നന്ദിയുള്ള അടിമ ആകേണ്ടായോ"></div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <label>കുട്ടികളുടെ പേരുകൾ (കോമ ഇട്ട് നൽകുക):</label>
+        <textarea id="student_names" placeholder="നബീൽ, അസ്ലം, ഫാരിസ്...">നബീൽ, അസ്ലം, ഫാരിസ്</textarea>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <label>ക്വിസ് ചോദ്യങ്ങൾ (JSON Format):</label>
+        <textarea id="data">[
+  { "q": "അല്ലാഹുവിന് സൃഷ്ടികളിൽ ഏറ്റവും പ്രിയപ്പെട്ടവൻ ആര്?", "a": "മുഹമ്മദ് നബി ﷺ", "o": ["ജിബ്‌രീൽ (അ)", "മുഹമ്മദ് നബി ﷺ", "ഇബ്രാഹീം നബി (അ)"] }
+]</textarea>
+    </div>
+
+    <button class="btn-generate" onclick="generateNow()">കോഡ് തയ്യാറാക്കുക</button>
+
+    <div id="output-section">
+        <label>ഈ കോഡ് കോപ്പി ചെയ്യുക:</label>
+        <textarea id="final-code-box" readonly></textarea>
+        <button class="btn-copy" onclick="copyToClipboard()">കോഡ് കോപ്പി ചെയ്യുക</button>
+    </div>
+</div>
+
+<script>
+function generateNow() {
+    const v_mad = document.getElementById('madrassa').value || "മദ്രസ";
+    const v_cls = document.getElementById('cls').value || "10";
+    const v_sub = document.getElementById('sub').value || "വിഷയം";
+    const v_prt = document.getElementById('prt').value || "1";
+    const v_lsn_no = document.getElementById('lsn_no').value || "1";
+    const v_lsn_name = document.getElementById('lsn_name').value || "പാഠം പേര്";
+    const v_data = document.getElementById('data').value;
+    
+    const namesInput = document.getElementById('student_names').value;
+    const v_names = JSON.stringify(namesInput.split(',').map(n => n.trim()).filter(n => n !== ""));
+
+    // ജനറേറ്റ് ചെയ്യുന്ന ഫയലിലേക്ക് പോകുന്ന പുതിയ ടെംപ്ലേറ്റ് കോഡ്
+    const template = `<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>\${v_sub} Quiz</title>
+    <style>
+        :root { --kbc-bg: radial-gradient(circle, #001f3f 0%, #000000 100%); --gold: #ffd700; --white: #ffffff; }
+        body { font-family: "Noto Sans Malayalam", sans-serif; background: var(--kbc-bg); margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: var(--white); overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        #game-box { background: rgba(0, 43, 82, 0.9); padding: 25px; width: 95%; max-width: 500px; min-height: 550px; border-radius: 25px; border: 3px solid var(--gold); box-shadow: 0 0 40px rgba(0,0,0,0.8); position: relative; display: flex; flex-direction: column; }
+        h2 { color: var(--gold); font-size: 1.4rem; text-align: center; border-bottom: 2px solid var(--gold); padding-bottom: 15px; margin: 10px 0 25px; line-height: 1.4; }
+        #question { font-size: 1.25rem; min-height: 100px; text-align: center; line-height: 1.6; background: rgba(255, 215, 0, 0.05); padding: 20px; border-radius: 15px; border: 1px solid rgba(255, 215, 0, 0.3); margin-bottom: 20px; display: flex; align-items: center; justify-content: center; }
+        .btn { display: block; width: 100%; padding: 15px; margin: 8px 0; border: 1px solid var(--gold); border-radius: 50px; font-size: 16px; cursor: pointer; font-weight: bold; transition: 0.3s; background: linear-gradient(180deg, #004488 0%, #001122 100%); color: white; text-align: right; padding-right: 25px; box-sizing: border-box; outline: none; opacity: 0; transform: translateY(10px); }
+        .btn.show { opacity: 1; transform: translateY(0); }
+        .btn:hover { background: var(--gold); color: black; transform: scale(1.02); }
+        .start-btn { background: var(--gold); color: black; font-size: 18px; border: none; text-align: center; padding-right: 15px; margin-top: 10px; opacity: 1 !important; transform: none !important; }
+        #info-bar { display: flex; justify-content: space-between; margin-bottom: 15px; color: var(--gold); font-size: 14px; font-weight: bold; }
+        .hidden { display: none !important; }
+        select { width: 100%; padding: 16px; border-radius: 30px; border: 2px solid var(--gold); background: #001122; color: white; text-align: center; font-size: 18px; outline: none; appearance: none; cursor: pointer; text-align-last: center; }
+        .certificate { border: 4px double var(--gold); padding: 20px; border-radius: 15px; background: #001122; }
+        .cert-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed rgba(255,215,0,0.2); font-size: 14px; }
+        .point-box { background: var(--gold); color: black; padding: 15px; border-radius: 10px; margin: 15px 0; text-align: center; font-size: 22px; font-weight: 900; }
+    </style>
+</head>
+<body>
+    <div id="game-box">
+        <div id="start-screen">
+            <div style="text-align:center; font-size:12px; color:var(--gold); margin-bottom:10px;">${v_mad}</div>
+            <h2>ക്ലാസ് ${v_cls} | ${v_sub} | പാഠം ${v_lsn_no}<br><span style="font-size:1.1rem; color:#fff;">${v_lsn_name}</span></h2>
+            <div style="margin-bottom: 20px;">
+                <label style="display:block; text-align:center; margin-bottom:10px; color:#aaa;">നിങ്ങളുടെ പേര് തിരഞ്ഞെടുക്കുക:</label>
+                <select id="player-select">
+                    <option value="">-- പേര് തിരഞ്ഞെടുക്കുക --</option>
+                </select>
+            </div>
+            <button class="btn start-btn" onclick="startGame()">ക്വിസ് തുടങ്ങാം 🚀</button>
+            <div style="text-align:center; font-size:10px; color:#aaa; margin-top:15px;">Faris Zaini Mannarkkad | 9895993822</div>
+        </div>
+
+        <div id="quiz-screen" class="hidden">
+            <div id="info-bar"><span>ചോദ്യം: <span id="q-no"></span>/<span id="total-q"></span></span><span id="timer">⏱ <span id="seconds">0</span>s</span></div>
+            <div id="question"></div>
+            <div id="options"></div>
+        </div>
+
+        <div id="win-screen" class="hidden">
+            <h2 style="border:none; margin-bottom:10px;">🎉 അഭിനന്ദനങ്ങൾ!</h2>
+            <div class="certificate">
+                <h3 style="text-align:center; color: var(--gold); margin-top:0;">വിജയ സർട്ടിഫിക്കറ്റ്</h3>
+                <div style="text-align:center; font-size:12px; color:var(--gold); margin-bottom:10px; border-bottom:1px solid #333; padding-bottom:5px;">${v_mad}</div>
+                <div class="cert-row"><span>പേര്:</span> <b id="final-name" style="color:var(--gold)"></b></div>
+                <div class="cert-row"><span>ശ്രമം:</span> <b id="final-attempts"></b></div>
+                <div class="cert-row"><span>സമയം:</span> <b><span id="final-duration"></span> s</b></div>
+                <div class="cert-row"><span>പൂർത്തിയാക്കിയത്:</span> <b id="final-real-time"></b></div>
+                <div class="point-box">പോയിന്റ്: <span id="final-points"></span></div>
+                <div style="text-align:center; font-size:13px; margin-top:10px; line-height:1.5;">ക്ലാസ് ${v_cls} ${v_sub} (പാർട്ട് ${v_prt})<br>പാഠം ${v_lsn_no} വിജയിച്ചു.</div>
+                <div style="text-align:center; font-size:12px; color:var(--gold); margin-top:10px; font-weight:bold;">ഏറ്റവും കുറവ് പോയിന്റ് ലഭിച്ചവർക്കാണ് ഫസ്റ്റ്.</div>
+                <div style="text-align:center; font-size:12px; color:#fff; margin-top:5px;">ഇതിന്റെ സ്ക്രീൻഷോട്ട് ഉസ്താദിന് അയച്ചു കൊടുക്കുക.</div>
+            </div>
+            <button class="btn start-btn" style="margin-top:20px" onclick="location.reload()">വീണ്ടും കളിക്കുക</button>
+        </div>
+
+        <div id="error-screen" class="hidden">
+            <h2 style="color: #ff4444; border-color: #ff4444;">പരാജയപ്പെട്ടു!</h2>
+            <div id="fail-msg" style="padding:20px; text-align:center; font-size:18px;"></div>
+            <button class="btn start-btn" onclick="location.reload()">വീണ്ടും ശ്രമിക്കുക 🔄</button>
+        </div>
+    </div>
+
+    <script>
+    const quizData = ${v_data};
+    const studentList = ${v_names};
+    let currentIndex = 0, secondsElapsed = 0, timerInterval, playerName = "", attempts = 1;
+
+    window.onload = () => {
+        const select = document.getElementById("player-select");
+        studentList.sort().forEach(name => {
+            let opt = document.createElement("option");
+            opt.value = name;
+            opt.innerText = name;
+            select.appendChild(opt);
+        });
+        if ('speechSynthesis' in window) { window.speechSynthesis.getVoices(); }
+    };
+
+    // --- ശബ്ദം മെച്ചപ്പെടുത്തിയ ഫങ്ക്ഷൻ ---
+    function speak(text, callback) { 
+        if (!('speechSynthesis' in window)) { if(callback) callback(); return; }
+        window.speechSynthesis.cancel(); 
+        const msg = new SpeechSynthesisUtterance(text); 
+        const voices = window.speechSynthesis.getVoices();
+        const mlVoice = voices.find(v => v.lang === 'ml-IN' || v.lang.startsWith('ml'));
+        if (mlVoice) { msg.voice = mlVoice; }
+        msg.lang = 'ml-IN'; 
+        msg.rate = 0.95; // കുട്ടികൾക്ക് വ്യക്തമാകാൻ വേഗത കുറച്ചു
+        msg.pitch = 1.0; 
+        msg.onend = callback; 
+        window.speechSynthesis.speak(msg); 
+    }
+
+    function typeWriter(text, elementId, callback) { 
+        let i = 0; const el = document.getElementById(elementId); el.innerHTML = ""; 
+        function type() { 
+            if (i < text.length) { el.innerHTML += text.charAt(i); i++; setTimeout(type, 25); } 
+            else if(callback) callback(); 
+        } 
+        type(); 
+    }
+    
+    function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
+
+    function startGame() { 
+        playerName = document.getElementById("player-select").value;
+        if (!playerName) { alert("പേര് തിരഞ്ഞെടുക്കുക!"); return; } 
+        let storageKey = "stats_" + playerName + "_${v_sub}_L${v_lsn_no}"; 
+        let stats = JSON.parse(localStorage.getItem(storageKey)) || { count: 0 }; 
+        attempts = stats.count + 1; 
+        localStorage.setItem(storageKey, JSON.stringify({ count: attempts })); 
+        shuffle(quizData); 
+        document.getElementById("start-screen").classList.add("hidden"); 
+        document.getElementById("quiz-screen").classList.remove("hidden"); 
+        document.getElementById("total-q").innerText = quizData.length; 
+        timerInterval = setInterval(() => { secondsElapsed++; document.getElementById("seconds").innerText = secondsElapsed; }, 1000); 
+        showQuestion(); 
+    }
+    
+    function showQuestion() { 
+        let q = quizData[currentIndex]; 
+        document.getElementById("q-no").innerText = currentIndex + 1; 
+        document.getElementById("options").innerHTML = ""; 
+        typeWriter(q.q, "question", () => { speak(q.q, () => { renderOptionsSequentially(q.o, q.a); }); }); 
+    }
+
+    function renderOptionsSequentially(options, correct) {
+        let optDiv = document.getElementById("options");
+        let shuffledOptions = [...options];
+        shuffle(shuffledOptions);
+        let i = 0;
+        function next() {
+            if (i < shuffledOptions.length) {
+                let btn = document.createElement("button");
+                btn.className = "btn";
+                btn.innerHTML = "<span>" + (i + 1) + ". </span>" + shuffledOptions[i];
+                let currentText = shuffledOptions[i];
+                btn.onclick = () => checkAnswer(currentText, correct);
+                optDiv.appendChild(btn);
+                setTimeout(() => { 
+                    btn.classList.add("show"); 
+                    let speechText = (i + 1) + ". " + currentText;
+                    speak(speechText, () => { i++; setTimeout(next, 150); }); 
+                }, 100);
+            }
+        }
+        next();
+    }
+
+    function checkAnswer(selected, correct) { 
+        window.speechSynthesis.cancel(); // ക്ലിക്ക് ചെയ്താൽ വോയിസ് നിർത്താൻ
+        if (selected === correct) { speak("ശരിയുത്തരം"); currentIndex++; if (currentIndex < quizData.length) setTimeout(showQuestion, 1000); else showWin(); } 
+        else { speak("ഉത്തരം തെറ്റാണ്"); gameOver(correct); } 
+    }
+    
+    function gameOver(correct) { clearInterval(timerInterval); document.getElementById("quiz-screen").classList.add("hidden"); document.getElementById("error-screen").classList.remove("hidden"); document.getElementById("fail-msg").innerHTML = "ഉത്തരം തെറ്റാണ്! <br><br>ശരിയായ ഉത്തരം: <br><b style='color:var(--gold);'>" + correct + "</b>"; }
+
+    function showWin() { 
+        clearInterval(timerInterval); 
+        document.getElementById("quiz-screen").classList.add("hidden"); 
+        document.getElementById("win-screen").classList.remove("hidden"); 
+        document.getElementById("final-name").innerText = playerName; 
+        document.getElementById("final-attempts").innerText = attempts; 
+        document.getElementById("final-duration").innerText = secondsElapsed; 
+        document.getElementById("final-points").innerText = (attempts * 100) + secondsElapsed; 
+        
+        const now = new Date();
+        const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+        const formattedTime = now.toLocaleTimeString('en-US', timeOptions);
+        const formattedDate = now.toLocaleDateString();
+        
+        document.getElementById("final-real-time").innerText = formattedTime + " | " + formattedDate; 
+        speak("അഭിനന്ദനങ്ങൾ! നിങ്ങൾ ക്വിസ് വിജയകരമായി പൂർത്തിയാക്കിയിരിക്കുന്നു."); 
+    }
+    <\/script>
+</body>
+</html>`;
+
+    document.getElementById('final-code-box').value = template;
+    document.getElementById('output-section').style.display = 'block';
+}
+
+function copyToClipboard() {
+    var box = document.getElementById('final-code-box');
+    box.select();
+    document.execCommand('copy');
+    alert("കോഡ് കോപ്പി ചെയ്തു!");
+}
+</script>
+</body>
+</html>
